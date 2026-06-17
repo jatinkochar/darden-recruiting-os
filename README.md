@@ -1,39 +1,23 @@
-# Darden Recruiting OS — Sprint 1–3
+# Google Link Patch
 
-Includes:
+Upload these files into your repo.
 
-## Sprint 1: Persistent events CRUD
-- Add/Edit/Delete events
-- Supabase-ready persistence
-- Fallback browser localStorage if Supabase env vars are missing
-- Event notes, meeting links, registration links, passcodes
+Adds:
+- Google OAuth connect route
+- Google callback route
+- Gmail recruiting email fetcher
+- Google Calendar event fetcher
+- Sync endpoint `/api/sync/google`
+- Settings page buttons
 
-## Sprint 2: Calendar
-- Agenda view
-- Month view
-- One-click Join links
+Also run:
 
-## Sprint 3: Gmail sync scaffold
-- Gmail parsing logic
-- `/api/sync/gmail` route
-- Supabase upsert flow
-- OAuth token exchange still needs to be connected in the next iteration
+supabase/google-integration.sql
 
-## Setup
+Add Vercel env vars:
+- NEXT_PUBLIC_APP_URL=https://darden-recruiting-os.vercel.app
+- GOOGLE_CLIENT_ID
+- GOOGLE_CLIENT_SECRET
+- GMAIL_SYNC_SECRET
 
-1. Upload this folder to GitHub branch `jatinkochar-v1`.
-2. Vercel will redeploy preview.
-3. Create Supabase project.
-4. Run `supabase/schema.sql` in Supabase SQL editor.
-5. Add Vercel environment variables:
-
-```text
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-GMAIL_SYNC_SECRET=
-```
-
-## Notes
-
-This is not yet full Gmail OAuth. The parser and sync endpoint are ready, but the Gmail token exchange needs the next implementation step.
+You also need Google Cloud OAuth setup.
