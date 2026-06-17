@@ -1,1 +1,1 @@
-Static assets can go here.
+Static assets go here.

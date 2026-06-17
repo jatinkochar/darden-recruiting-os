@@ -1,51 +1,39 @@
-# Darden Recruiting OS
+# Darden Recruiting OS — Sprint 1–3
 
-A production-ready starter for your MBA recruiting command center.
+Includes:
 
-## What this includes
+## Sprint 1: Persistent events CRUD
+- Add/Edit/Delete events
+- Supabase-ready persistence
+- Fallback browser localStorage if Supabase env vars are missing
+- Event notes, meeting links, registration links, passcodes
 
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Vercel-ready deployment
-- Dashboard
-- Events
-- Networking CRM
-- Applications
-- Tasks
-- Settings/integrations scaffold
-- Seed data from Gmail-extracted McKinsey, Bain, BCG placeholder, and Darden events
+## Sprint 2: Calendar
+- Agenda view
+- Month view
+- One-click Join links
 
-## Upload to GitHub
+## Sprint 3: Gmail sync scaffold
+- Gmail parsing logic
+- `/api/sync/gmail` route
+- Supabase upsert flow
+- OAuth token exchange still needs to be connected in the next iteration
 
-Upload the full contents of this folder to your new GitHub repository.
+## Setup
 
-## Deploy to Vercel
-
-1. Go to Vercel
-2. New Project
-3. Import your GitHub repo
-4. Framework preset: Next.js
-5. Deploy
-
-## Local run, optional
-
-```bash
-npm install
-npm run dev
-```
-
-Open:
+1. Upload this folder to GitHub branch `jatinkochar-v1`.
+2. Vercel will redeploy preview.
+3. Create Supabase project.
+4. Run `supabase/schema.sql` in Supabase SQL editor.
+5. Add Vercel environment variables:
 
 ```text
-http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GMAIL_SYNC_SECRET=
 ```
 
-## Next build phase
+## Notes
 
-- Manual add/edit for events, contacts, applications, tasks
-- Supabase database
-- Google OAuth
-- Gmail API sync
-- Outlook sync
-- Calendar sync
+This is not yet full Gmail OAuth. The parser and sync endpoint are ready, but the Gmail token exchange needs the next implementation step.
