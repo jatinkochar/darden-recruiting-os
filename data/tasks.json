@@ -5,7 +5,8 @@
     "company": "BCG",
     "dueDate": "",
     "status": "Backlog",
-    "priority": "High"
+    "priority": "High",
+    "notes": "Use BCG Eightfold portal."
   },
   {
     "id": "task-mck",
@@ -13,6 +14,7 @@
     "company": "McKinsey",
     "dueDate": "2026-06-22",
     "status": "This Week",
-    "priority": "High"
+    "priority": "High",
+    "notes": "Bay Area, NY, Boston, Atlanta."
   }
 ]

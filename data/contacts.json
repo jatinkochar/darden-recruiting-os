@@ -1,11 +1,13 @@
 [
   {
-    "id": "contact-template",
+    "id": "contact-1",
     "name": "Add your first recruiter/contact",
     "company": "McKinsey",
     "office": "",
     "role": "",
     "email": "",
+    "linkedin": "",
+    "lastTouch": "",
     "nextFollowUp": "",
     "status": "New",
     "notes": "Use CRM to track coffee chats and follow-ups."

@@ -6,6 +6,7 @@
     "status": "Networking",
     "deadline": "",
     "priority": "High",
+    "link": "",
     "notes": "Office events in progress."
   },
   {
@@ -15,6 +16,7 @@
     "status": "Networking",
     "deadline": "",
     "priority": "High",
+    "link": "",
     "notes": "ExperienceBain in progress."
   },
   {
@@ -24,6 +26,7 @@
     "status": "Portal Review",
     "deadline": "",
     "priority": "High",
+    "link": "https://bcg.eightfold.ai/events/open?domain=bcg.com",
     "notes": "Add US Pre-MBA events manually."
   }
 ]

@@ -1,51 +1,25 @@
-# Darden Recruiting OS
+# Darden Recruiting OS V1.1
 
-A production-ready starter for your MBA recruiting command center.
+This version adds interactive CRUD:
 
-## What this includes
-
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Vercel-ready deployment
-- Dashboard
-- Events
-- Networking CRM
-- Applications
-- Tasks
-- Settings/integrations scaffold
-- Seed data from Gmail-extracted McKinsey, Bain, BCG placeholder, and Darden events
+- Add/Edit/Delete Events
+- Add/Edit/Delete Networking CRM
+- Add/Edit/Delete Applications
+- Add/Edit/Delete Tasks
+- Browser persistence via localStorage
+- Search/filter for events
+- Vercel-ready Next.js app
 
 ## Upload to GitHub
 
-Upload the full contents of this folder to your new GitHub repository.
+Upload the full contents of this folder to the existing GitHub repo and commit.
 
-## Deploy to Vercel
+Vercel will auto-deploy.
 
-1. Go to Vercel
-2. New Project
-3. Import your GitHub repo
-4. Framework preset: Next.js
-5. Deploy
+## Important
 
-## Local run, optional
+This version saves changes in the browser. V1.2 will add Supabase so data syncs across laptop/phone.
 
-```bash
-npm install
-npm run dev
-```
+## Environment variables
 
-Open:
-
-```text
-http://localhost:3000
-```
-
-## Next build phase
-
-- Manual add/edit for events, contacts, applications, tasks
-- Supabase database
-- Google OAuth
-- Gmail API sync
-- Outlook sync
-- Calendar sync
+None required for V1.1.
