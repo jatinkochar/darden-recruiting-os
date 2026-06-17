@@ -1,9 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at 10% 0%, rgba(183, 120, 74, 0.22), transparent 32%), radial-gradient(circle at 90% 8%, rgba(124, 77, 47, 0.16), transparent 24%), #f6f3ee;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(183, 120, 74, 0.22), transparent 32%),
+    radial-gradient(circle at 90% 8%, rgba(124, 77, 47, 0.16), transparent 24%),
+    #f6f3ee;
   color: #2f2a24;
 }
 .card { @apply rounded-3xl border border-stone-200/80 bg-white/75 shadow-xl shadow-stone-900/5 backdrop-blur; }

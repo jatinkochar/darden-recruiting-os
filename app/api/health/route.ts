@@ -1,1 +1,1 @@
-export async function GET() { return Response.json({ ok: true, app: "darden-recruiting-os", version: "0.2.0" }); }
+export async function GET() { return Response.json({ ok: true, app: "darden-recruiting-os", version: "0.3.0" }); }

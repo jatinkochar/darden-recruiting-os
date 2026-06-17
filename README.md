@@ -1,25 +1,39 @@
-# Darden Recruiting OS V1.1
+# Darden Recruiting OS — Sprint 1–3
 
-This version adds interactive CRUD:
+Includes:
 
-- Add/Edit/Delete Events
-- Add/Edit/Delete Networking CRM
-- Add/Edit/Delete Applications
-- Add/Edit/Delete Tasks
-- Browser persistence via localStorage
-- Search/filter for events
-- Vercel-ready Next.js app
+## Sprint 1: Persistent events CRUD
+- Add/Edit/Delete events
+- Supabase-ready persistence
+- Fallback browser localStorage if Supabase env vars are missing
+- Event notes, meeting links, registration links, passcodes
 
-## Upload to GitHub
+## Sprint 2: Calendar
+- Agenda view
+- Month view
+- One-click Join links
 
-Upload the full contents of this folder to the existing GitHub repo and commit.
+## Sprint 3: Gmail sync scaffold
+- Gmail parsing logic
+- `/api/sync/gmail` route
+- Supabase upsert flow
+- OAuth token exchange still needs to be connected in the next iteration
 
-Vercel will auto-deploy.
+## Setup
 
-## Important
+1. Upload this folder to GitHub branch `jatinkochar-v1`.
+2. Vercel will redeploy preview.
+3. Create Supabase project.
+4. Run `supabase/schema.sql` in Supabase SQL editor.
+5. Add Vercel environment variables:
 
-This version saves changes in the browser. V1.2 will add Supabase so data syncs across laptop/phone.
+```text
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GMAIL_SYNC_SECRET=
+```
 
-## Environment variables
+## Notes
 
-None required for V1.1.
+This is not yet full Gmail OAuth. The parser and sync endpoint are ready, but the Gmail token exchange needs the next implementation step.
