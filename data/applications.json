@@ -1,0 +1,29 @@
+[
+  {
+    "id": "app-mck",
+    "company": "McKinsey",
+    "role": "Associate / Summer Associate",
+    "status": "Networking",
+    "deadline": "",
+    "priority": "High",
+    "notes": "Office events in progress."
+  },
+  {
+    "id": "app-bain",
+    "company": "Bain",
+    "role": "Consultant / Summer Associate",
+    "status": "Networking",
+    "deadline": "",
+    "priority": "High",
+    "notes": "ExperienceBain in progress."
+  },
+  {
+    "id": "app-bcg",
+    "company": "BCG",
+    "role": "Consultant / Summer Associate",
+    "status": "Portal Review",
+    "deadline": "",
+    "priority": "High",
+    "notes": "Add US Pre-MBA events manually."
+  }
+]

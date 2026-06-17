@@ -1,0 +1,18 @@
+[
+  {
+    "id": "task-bcg",
+    "title": "Add BCG US Pre-MBA portal sessions manually",
+    "company": "BCG",
+    "dueDate": "",
+    "status": "Backlog",
+    "priority": "High"
+  },
+  {
+    "id": "task-mck",
+    "title": "Prepare office-specific questions for McKinsey events",
+    "company": "McKinsey",
+    "dueDate": "2026-06-22",
+    "status": "This Week",
+    "priority": "High"
+  }
+]
