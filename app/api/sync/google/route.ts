@@ -6,10 +6,24 @@ import { fetchGoogleCalendarEvents } from "@/lib/google/calendar";
 import { parseRecruitingEmail } from "@/lib/gmail/parser";
 import { toSnakeEvent } from "@/lib/utils";
 
+export async function GET(req: NextRequest) {
+  return syncGoogle(req);
+}
+
 export async function POST(req: NextRequest) {
+  return syncGoogle(req);
+}
+
+async function syncGoogle(req: NextRequest) {
+  // Browser-initiated manual sync is allowed.
+  // Secret header remains supported for future cron/background jobs.
   const syncSecret = req.headers.get("x-sync-secret");
 
-  if (process.env.GMAIL_SYNC_SECRET && syncSecret !== process.env.GMAIL_SYNC_SECRET) {
+  if (
+    process.env.GMAIL_SYNC_SECRET &&
+    syncSecret &&
+    syncSecret !== process.env.GMAIL_SYNC_SECRET
+  ) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
