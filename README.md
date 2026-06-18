@@ -1,9 +1,13 @@
-# Supabase Login Token Fix
+# User Events API Fix
 
 Replace/add:
+- app/api/events/route.ts
+- components/events/EventsClient.tsx
+- components/dashboard/DashboardClient.tsx
 
-- components/auth/LoginForm.tsx
-- app/api/auth/session/route.ts
+Why:
+After multi-user login, the server has the session cookie but browser Supabase client may not have localStorage session.
+Events page was falling back to local seed data.
 
-This fixes Supabase Auth redirects that return #access_token instead of ?code.
-After login, the app captures the token, sets server cookies, and redirects to /.
+Fix:
+Events and Dashboard now load user-scoped events through server API route `/api/events`.
