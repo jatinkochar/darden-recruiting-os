@@ -1,27 +1,25 @@
+import { cookies } from "next/headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export async function GET() {
   const supabase = getSupabaseAdminClient();
+  const accessToken = cookies().get("sb-access-token")?.value;
 
-  if (!supabase) {
-    return Response.json({
-      connected: false,
-      last_sync_error: "Supabase env vars missing"
-    });
+  if (!supabase || !accessToken) {
+    return Response.json({ connected: false, last_sync_error: "Not signed in" });
   }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+  if (userError || !userData.user) return Response.json({ connected: false, last_sync_error: "Not signed in" });
 
   const { data, error } = await supabase
     .from("integrations")
     .select("provider, refresh_token, updated_at, expires_at, last_sync_at, last_sync_status, last_sync_error, last_sync_gmail_messages, last_sync_gmail_events, last_sync_calendar_events, last_sync_imported")
     .eq("provider", "google")
+    .eq("user_id", userData.user.id)
     .maybeSingle();
 
-  if (error) {
-    return Response.json({
-      connected: false,
-      last_sync_error: error.message
-    });
-  }
+  if (error) return Response.json({ connected: false, last_sync_error: error.message });
 
   return Response.json({
     connected: Boolean(data?.refresh_token),
