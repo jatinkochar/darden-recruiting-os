@@ -2,10 +2,17 @@ import { cookies } from "next/headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { fromSnakeEvent, toSnakeEvent } from "@/lib/utils";
 
+function enrichFromSnake(row: any) {
+  return {
+    ...fromSnakeEvent(row),
+    userNotes: row.user_notes || "",
+    emailBody: row.email_body || row.notes || ""
+  };
+}
+
 async function getUserId() {
   const accessToken = cookies().get("sb-access-token")?.value;
   const supabase = getSupabaseAdminClient();
-
   if (!supabase || !accessToken) return { supabase, userId: null };
 
   const { data, error } = await supabase.auth.getUser(accessToken);
@@ -31,9 +38,7 @@ export async function GET() {
     return Response.json({ error: error.message, events: [] }, { status: 500 });
   }
 
-  return Response.json({
-    events: (data || []).map(fromSnakeEvent)
-  });
+  return Response.json({ events: (data || []).map(enrichFromSnake) });
 }
 
 export async function POST(req: Request) {
@@ -50,10 +55,14 @@ export async function POST(req: Request) {
     return Response.json({ error: "Missing event" }, { status: 400 });
   }
 
-  const { error } = await supabase.from("events").upsert({
+  const row = {
     ...toSnakeEvent(event),
-    user_id: userId
-  });
+    user_id: userId,
+    user_notes: event.userNotes || event.user_notes || "",
+    email_body: event.emailBody || event.email_body || event.notes || ""
+  };
+
+  const { error } = await supabase.from("events").upsert(row);
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
@@ -76,11 +85,7 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "Missing id" }, { status: 400 });
   }
 
-  const { error } = await supabase
-    .from("events")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
+  const { error } = await supabase.from("events").delete().eq("id", id).eq("user_id", userId);
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
