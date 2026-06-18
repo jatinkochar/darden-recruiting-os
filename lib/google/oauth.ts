@@ -12,7 +12,7 @@ export function getGoogleRedirectUri() {
   return `${appUrl.replace(/\/$/, "")}/api/auth/google/callback`;
 }
 
-export function getGoogleAuthUrl() {
+export function getGoogleAuthUrl(userId: string) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) throw new Error("Missing GOOGLE_CLIENT_ID");
 
@@ -23,7 +23,8 @@ export function getGoogleAuthUrl() {
     access_type: "offline",
     prompt: "consent",
     include_granted_scopes: "true",
-    scope: GOOGLE_SCOPES.join(" ")
+    scope: GOOGLE_SCOPES.join(" "),
+    state: userId
   });
 
   return `${GOOGLE_AUTH_URL}?${params.toString()}`;
@@ -46,18 +47,8 @@ export async function exchangeCodeForTokens(code: string) {
     })
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Google token exchange failed: ${text}`);
-  }
-
-  return response.json() as Promise<{
-    access_token: string;
-    expires_in: number;
-    refresh_token?: string;
-    scope: string;
-    token_type: string;
-  }>;
+  if (!response.ok) throw new Error(`Google token exchange failed: ${await response.text()}`);
+  return response.json() as Promise<{ access_token: string; expires_in: number; refresh_token?: string; scope: string; token_type: string }>;
 }
 
 export async function refreshGoogleAccessToken(refreshToken: string) {
@@ -76,15 +67,6 @@ export async function refreshGoogleAccessToken(refreshToken: string) {
     })
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Google refresh failed: ${text}`);
-  }
-
-  return response.json() as Promise<{
-    access_token: string;
-    expires_in: number;
-    scope?: string;
-    token_type: string;
-  }>;
+  if (!response.ok) throw new Error(`Google refresh failed: ${await response.text()}`);
+  return response.json() as Promise<{ access_token: string; expires_in: number; scope?: string; token_type: string }>;
 }
