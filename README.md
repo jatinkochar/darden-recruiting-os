@@ -1,13 +1,11 @@
-# Events UX Redesign Patch
+# Events Filter + Card Polish Patch
 
-Upload/replace:
+Replace:
 - components/events/EventCard.tsx
-- components/events/EventDetailDrawer.tsx
 - components/events/EventsClient.tsx
-- app/api/events/route.ts
-- supabase/event-notes-email-body.sql
 
-Then run:
-supabase/event-notes-email-body.sql
-
-Adds compact cards, card/list toggle, details drawer, separate My Notes from Original Email, timezone selector, and cleaner date/time display.
+Fixes:
+- Search field now full-width with correct padding.
+- Filters have labels above dropdowns.
+- Card/List toggle is icon-only with selected state.
+- Passcodes are truncated and stay inside cards.
