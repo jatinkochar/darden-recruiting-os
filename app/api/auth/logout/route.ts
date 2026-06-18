@@ -1,6 +1,27 @@
-export async function POST() {
-  const response = Response.redirect(`${process.env.NEXT_PUBLIC_APP_URL || ""}/login`);
-  response.headers.append("Set-Cookie", "sb-access-token=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
-  response.headers.append("Set-Cookie", "sb-refresh-token=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
+import { NextResponse } from "next/server";
+
+function logout() {
+  const response = NextResponse.redirect(
+    `${process.env.NEXT_PUBLIC_APP_URL || "https://darden-recruiting-os.vercel.app"}/login`
+  );
+
+  response.cookies.set("sb-access-token", "", {
+    path: "/",
+    maxAge: 0,
+  });
+
+  response.cookies.set("sb-refresh-token", "", {
+    path: "/",
+    maxAge: 0,
+  });
+
   return response;
+}
+
+export async function GET() {
+  return logout();
+}
+
+export async function POST() {
+  return logout();
 }
