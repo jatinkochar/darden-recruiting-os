@@ -1,13 +1,13 @@
-# User Events API Fix
+# Events UX Redesign Patch
 
-Replace/add:
-- app/api/events/route.ts
+Upload/replace:
+- components/events/EventCard.tsx
+- components/events/EventDetailDrawer.tsx
 - components/events/EventsClient.tsx
-- components/dashboard/DashboardClient.tsx
+- app/api/events/route.ts
+- supabase/event-notes-email-body.sql
 
-Why:
-After multi-user login, the server has the session cookie but browser Supabase client may not have localStorage session.
-Events page was falling back to local seed data.
+Then run:
+supabase/event-notes-email-body.sql
 
-Fix:
-Events and Dashboard now load user-scoped events through server API route `/api/events`.
+Adds compact cards, card/list toggle, details drawer, separate My Notes from Original Email, timezone selector, and cleaner date/time display.
