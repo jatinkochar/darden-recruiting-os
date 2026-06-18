@@ -1,11 +1,13 @@
-# Events Filter + Card Polish Patch
+# Compass Commit 1 — App Shell Refresh
 
-Replace:
-- components/events/EventCard.tsx
-- components/events/EventsClient.tsx
+Replace these files:
 
-Fixes:
-- Search field now full-width with correct padding.
-- Filters have labels above dropdowns.
-- Card/List toggle is icon-only with selected state.
-- Passcodes are truncated and stay inside cards.
+- app/layout.tsx
+- components/layout/AppShell.tsx
+- components/layout/Sidebar.tsx
+- tailwind.config.ts
+
+Note:
+- This assumes you already replaced app/globals.css with the Compass globals from the previous step.
+- No functionality changes.
+- Branding changes from Darden Recruiting OS to Compass.
