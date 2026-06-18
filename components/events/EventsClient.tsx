@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, RotateCcw, Search, Database, CloudOff, SlidersHorizontal } from "lucide-react";
 import type { RecruitingEvent } from "@/types";
-import { computedStatus, eventDate, fromSnakeEvent, toSnakeEvent } from "@/lib/utils";
+import { computedStatus, eventDate } from "@/lib/utils";
 import { loadLocal, saveLocal } from "@/lib/storage";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { EventCard } from "@/components/events/EventCard";
 import { EventForm } from "@/components/events/EventForm";
 import { StatCard } from "@/components/ui/StatCard";
@@ -16,30 +15,47 @@ type DateFilter = "upcoming" | "today" | "next7" | "next30" | "all" | "ended" | 
 type DuplicateMode = "hide" | "show";
 
 function normalizeTitle(title: string) {
-  return title.toLowerCase().replace(/^(re:|fw:|fwd:)\s*/g, "").replace(/^jatin,\s*/g, "").replace(/^confirmed:\s*/g, "").replace(/^you are confirmed to attend\s*/g, "").replace(/^reminder:\s*/g, "").replace(/\b24\s*hour reminder:?\s*/g, "").replace(/\s+/g, " ").trim();
+  return title
+    .toLowerCase()
+    .replace(/^(re:|fw:|fwd:)\s*/g, "")
+    .replace(/^jatin,\s*/g, "")
+    .replace(/^confirmed:\s*/g, "")
+    .replace(/^you are confirmed to attend\s*/g, "")
+    .replace(/^you are registered for\s*/g, "")
+    .replace(/^you're registered for\s*/g, "")
+    .replace(/^thank you for registering for\s*/g, "")
+    .replace(/^reminder:\s*/g, "")
+    .replace(/\b24\s*hour reminder:?\s*/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function duplicateKey(event: RecruitingEvent) {
   const company = (event.company || "").toLowerCase().trim();
   const date = event.date || "";
   const time = event.startTime || "";
-  const title = normalizeTitle(event.title).replace(/\b(mckinsey|early access|experiencebain|event|session|webinar|office|spotlight|meet the)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim().slice(0, 32);
+  const title = normalizeTitle(event.title)
+    .replace(/\b(mckinsey|early access|experiencebain|experience bain|event|session|webinar|office|spotlight|meet the|confirmed|admitted|prospective|student|counseling)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .slice(0, 32);
+
   return `${company}|${date}|${time}|${title}`;
 }
 
 function collapseDuplicates(events: RecruitingEvent[]) {
   const groups = new Map<string, RecruitingEvent[]>();
+
   for (const event of events) {
     const key = duplicateKey(event);
     groups.set(key, [...(groups.get(key) || []), event]);
   }
+
   return Array.from(groups.values()).map((group) => {
     if (group.length === 1) return group[0];
-    const best = [...group].sort((a, b) => {
-      const score = (e: RecruitingEvent) =>
-        (e.status === "Registered" ? 30 : 0) + (e.meetingLink ? 20 : 0) + (e.passcode ? 8 : 0) + (!/reminder|confirmed to attend/i.test(e.title) ? 10 : 0);
-      return score(b) - score(a);
-    })[0];
+
+    const best = [...group].sort((a, b) => scoreEvent(b) - scoreEvent(a))[0];
+
     return {
       ...best,
       meetingLink: best.meetingLink || group.find((e) => e.meetingLink)?.meetingLink || "",
@@ -50,19 +66,34 @@ function collapseDuplicates(events: RecruitingEvent[]) {
   });
 }
 
+function scoreEvent(event: RecruitingEvent) {
+  return (
+    (event.status === "Registered" ? 30 : 0) +
+    (event.meetingLink ? 20 : 0) +
+    (event.registrationLink ? 10 : 0) +
+    (event.passcode ? 8 : 0) +
+    (!/reminder|confirmed to attend/i.test(event.title) ? 10 : 0)
+  );
+}
+
 function isWithinDateFilter(event: RecruitingEvent, filter: DateFilter) {
   const status = computedStatus(event);
   const d = eventDate(event);
   const today = new Date(new Date().toDateString());
+
   if (filter === "all") return true;
   if (filter === "ended") return status === "Ended";
   if (filter === "missing") return !event.date;
   if (filter === "today") return status === "Happening Today";
+
   if (!d) return false;
+
   if (filter === "upcoming") return d >= today && status !== "Ended";
+
   const limit = new Date(today);
   if (filter === "next7") limit.setDate(limit.getDate() + 7);
   if (filter === "next30") limit.setDate(limit.getDate() + 30);
+
   return d >= today && d <= limit && status !== "Ended";
 }
 
@@ -75,76 +106,92 @@ export function EventsClient({ seedEvents }: { seedEvents: RecruitingEvent[] }) 
   const [dateFilter, setDateFilter] = useState<DateFilter>("upcoming");
   const [duplicateMode, setDuplicateMode] = useState<DuplicateMode>("hide");
   const [editing, setEditing] = useState<RecruitingEvent | null | undefined>(undefined);
-  const supabase = getSupabaseBrowserClient();
 
-  useEffect(() => { if (supabase) void loadFromSupabase(); }, []);
+  useEffect(() => {
+    void loadFromServer();
+  }, []);
 
-  async function loadFromSupabase() {
-    if (!supabase) return;
-    const { data: authData } = await supabase.auth.getSession();
-    const userId = authData.session?.user.id;
-    if (!userId) {
+  async function loadFromServer() {
+    const res = await fetch("/api/events", { cache: "no-store" });
+
+    if (!res.ok) {
       setMode("local");
       return;
     }
 
-    const { data, error } = await supabase.from("events").select("*").eq("user_id", userId).order("date", { ascending: true, nullsFirst: false });
-    if (error) {
-      console.error("Supabase events load failed:", error.message);
-      setMode("local");
-      return;
-    }
+    const json = await res.json();
+    const next = json.events || [];
 
-    const parsed = (data || []).map(fromSnakeEvent);
-    setEvents(parsed.length ? parsed : []);
-    saveLocal(KEY, parsed);
+    setEvents(next);
+    saveLocal(KEY, next);
     setMode("supabase");
   }
 
   async function saveEvent(event: RecruitingEvent) {
     const exists = events.some((e) => e.id === event.id);
     const next = exists ? events.map((e) => e.id === event.id ? event : e) : [event, ...events];
+
     setEvents(next);
     saveLocal(KEY, next);
 
-    if (supabase) {
-      const { data: authData } = await supabase.auth.getSession();
-      const userId = authData.session?.user.id;
-      if (userId) {
-        await supabase.from("events").upsert({ ...toSnakeEvent(event), user_id: userId });
-        await loadFromSupabase();
-      }
+    const res = await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event })
+    });
+
+    if (res.ok) {
+      await loadFromServer();
     }
+
     setEditing(undefined);
   }
 
   async function deleteEvent(id: string) {
     if (!confirm("Delete this event?")) return;
+
     const next = events.filter((e) => e.id !== id);
     setEvents(next);
     saveLocal(KEY, next);
-    if (supabase) await supabase.from("events").delete().eq("id", id);
+
+    await fetch(`/api/events?id=${encodeURIComponent(id)}`, {
+      method: "DELETE"
+    });
   }
 
-  const displayEvents = useMemo(() => duplicateMode === "hide" ? collapseDuplicates(events) : events, [events, duplicateMode]);
-  const companies = useMemo(() => Array.from(new Set(displayEvents.map((e) => e.company).filter(Boolean))).sort(), [displayEvents]);
-  const statuses = useMemo(() => Array.from(new Set(displayEvents.map((e) => computedStatus(e)).filter(Boolean))).sort(), [displayEvents]);
+  const displayEvents = useMemo(() => {
+    return duplicateMode === "hide" ? collapseDuplicates(events) : events;
+  }, [events, duplicateMode]);
+
+  const companies = useMemo(
+    () => Array.from(new Set(displayEvents.map((e) => e.company).filter(Boolean))).sort(),
+    [displayEvents]
+  );
+
+  const statuses = useMemo(
+    () => Array.from(new Set(displayEvents.map((e) => computedStatus(e)).filter(Boolean))).sort(),
+    [displayEvents]
+  );
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
-    return displayEvents.filter((event) => {
-      if (company && event.company !== company) return false;
-      if (status && computedStatus(event) !== status && event.status !== status) return false;
-      if (!isWithinDateFilter(event, dateFilter)) return false;
-      if (q && !Object.values(event).join(" ").toLowerCase().includes(q)) return false;
-      return true;
-    }).sort((a, b) => {
-      const da = eventDate(a), db = eventDate(b);
-      if (!da && !db) return a.title.localeCompare(b.title);
-      if (!da) return 1;
-      if (!db) return -1;
-      return Number(da) - Number(db);
-    });
+
+    return displayEvents
+      .filter((event) => {
+        if (company && event.company !== company) return false;
+        if (status && computedStatus(event) !== status && event.status !== status) return false;
+        if (!isWithinDateFilter(event, dateFilter)) return false;
+        if (q && !Object.values(event).join(" ").toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const da = eventDate(a);
+        const db = eventDate(b);
+        if (!da && !db) return a.title.localeCompare(b.title);
+        if (!da) return 1;
+        if (!db) return -1;
+        return Number(da) - Number(db);
+      });
   }, [displayEvents, query, company, status, dateFilter]);
 
   const upcoming = displayEvents.filter((e) => {
@@ -161,9 +208,15 @@ export function EventsClient({ seedEvents }: { seedEvents: RecruitingEvent[] }) 
             <p className="mt-2 text-stone-600">User-scoped events. Opens to upcoming by default.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="pill bg-stone-100 text-stone-700">{mode === "supabase" ? <Database size={14}/> : <CloudOff size={14}/>} {mode}</span>
-            <button className="btn-secondary" onClick={() => loadFromSupabase()}><RotateCcw size={16} /> Refresh</button>
-            <button className="btn" onClick={() => setEditing(null)}><Plus size={16} /> Add Event</button>
+            <span className="pill bg-stone-100 text-stone-700">
+              {mode === "supabase" ? <Database size={14}/> : <CloudOff size={14}/>} {mode}
+            </span>
+            <button className="btn-secondary" onClick={loadFromServer}>
+              <RotateCcw size={16} /> Refresh
+            </button>
+            <button className="btn" onClick={() => setEditing(null)}>
+              <Plus size={16} /> Add Event
+            </button>
           </div>
         </div>
       </div>
@@ -176,28 +229,64 @@ export function EventsClient({ seedEvents }: { seedEvents: RecruitingEvent[] }) 
       </section>
 
       <section className="card space-y-3 p-4">
-        <div className="flex items-center gap-2 text-sm font-black text-stone-600"><SlidersHorizontal size={16}/>Filters</div>
+        <div className="flex items-center gap-2 text-sm font-black text-stone-600">
+          <SlidersHorizontal size={16}/>
+          Filters
+        </div>
+
         <div className="grid gap-3 md:grid-cols-[1.3fr_repeat(5,minmax(130px,1fr))]">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 text-stone-400" size={18}/>
             <input className="input pl-10" placeholder="Search events..." value={query} onChange={(e)=>setQuery(e.target.value)} />
           </div>
+
           <select className="input" value={dateFilter} onChange={(e)=>setDateFilter(e.target.value as DateFilter)}>
-            <option value="upcoming">Upcoming</option><option value="today">Today</option><option value="next7">Next 7 days</option><option value="next30">Next 30 days</option><option value="missing">Missing date</option><option value="ended">Ended</option><option value="all">All dates</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="today">Today</option>
+            <option value="next7">Next 7 days</option>
+            <option value="next30">Next 30 days</option>
+            <option value="missing">Missing date</option>
+            <option value="ended">Ended</option>
+            <option value="all">All dates</option>
           </select>
-          <select className="input" value={company} onChange={(e)=>setCompany(e.target.value)}><option value="">All companies</option>{companies.map((c)=><option key={c}>{c}</option>)}</select>
-          <select className="input" value={status} onChange={(e)=>setStatus(e.target.value)}><option value="">All statuses</option>{statuses.map((s)=><option key={s}>{s}</option>)}</select>
-          <select className="input" value={duplicateMode} onChange={(e)=>setDuplicateMode(e.target.value as DuplicateMode)}><option value="hide">Hide duplicates</option><option value="show">Show duplicates</option></select>
-          <button className="btn-secondary" onClick={()=>{ setQuery(""); setCompany(""); setStatus(""); setDateFilter("upcoming"); setDuplicateMode("hide"); }}>Clear</button>
+
+          <select className="input" value={company} onChange={(e)=>setCompany(e.target.value)}>
+            <option value="">All companies</option>
+            {companies.map((c)=><option key={c}>{c}</option>)}
+          </select>
+
+          <select className="input" value={status} onChange={(e)=>setStatus(e.target.value)}>
+            <option value="">All statuses</option>
+            {statuses.map((s)=><option key={s}>{s}</option>)}
+          </select>
+
+          <select className="input" value={duplicateMode} onChange={(e)=>setDuplicateMode(e.target.value as DuplicateMode)}>
+            <option value="hide">Hide duplicates</option>
+            <option value="show">Show duplicates</option>
+          </select>
+
+          <button className="btn-secondary" onClick={()=>{ setQuery(""); setCompany(""); setStatus(""); setDateFilter("upcoming"); setDuplicateMode("hide"); }}>
+            Clear
+          </button>
         </div>
       </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((event)=><EventCard key={event.id} event={event} onEdit={()=>setEditing(event)} onDelete={()=>deleteEvent(event.id)}/>)}
+        {filtered.map((event)=>
+          <EventCard
+            key={event.id}
+            event={event}
+            onEdit={()=>setEditing(event)}
+            onDelete={()=>deleteEvent(event.id)}
+          />
+        )}
       </div>
 
       {filtered.length === 0 ? <div className="card p-10 text-center text-stone-500">No events found for these filters.</div> : null}
-      {editing !== undefined ? <EventForm initial={editing ?? undefined} onSave={saveEvent} onCancel={()=>setEditing(undefined)}/> : null}
+
+      {editing !== undefined ? (
+        <EventForm initial={editing ?? undefined} onSave={saveEvent} onCancel={()=>setEditing(undefined)}/>
+      ) : null}
     </div>
   );
 }
