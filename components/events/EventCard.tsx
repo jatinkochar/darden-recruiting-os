@@ -51,6 +51,11 @@ function badgeClass(status: string) {
   return "bg-yellow-100 text-yellow-800";
 }
 
+function shortPasscode(passcode?: string) {
+  if (!passcode) return "";
+  return passcode.length > 18 ? `${passcode.slice(0, 15)}…` : passcode;
+}
+
 export function EventCard({ event, onOpen, onEdit, onDelete, timezone = "local" }: Props) {
   const status = computedStatus(event);
 
@@ -65,15 +70,19 @@ export function EventCard({ event, onOpen, onEdit, onDelete, timezone = "local" 
       </div>
 
       <div className="mt-4 grid gap-2 text-sm font-bold text-stone-700">
-        <div className="flex items-center gap-2"><CalendarDays size={16} className="text-stone-400" />{formatDate(event, timezone)}</div>
-        <div className="flex items-center gap-2"><Clock size={16} className="text-stone-400" />{formatTime(event)}</div>
-        <div className="flex items-center gap-2"><MapPin size={16} className="text-stone-400" />{event.location || "Location TBD"}</div>
+        <div className="flex items-center gap-2"><CalendarDays size={16} className="shrink-0 text-stone-400" />{formatDate(event, timezone)}</div>
+        <div className="flex items-center gap-2"><Clock size={16} className="shrink-0 text-stone-400" />{formatTime(event)}</div>
+        <div className="flex items-center gap-2"><MapPin size={16} className="shrink-0 text-stone-400" />{event.location || "Location TBD"}</div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="mt-4 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {event.meetingLink ? <a className="btn px-3 py-2 text-xs" href={event.meetingLink} target="_blank"><ExternalLink size={14} /> Join</a> : null}
         {event.registrationLink ? <a className="btn-secondary px-3 py-2 text-xs" href={event.registrationLink} target="_blank">Register</a> : null}
-        {event.passcode ? <span className="pill bg-stone-100 text-stone-700">Passcode: {event.passcode}</span> : null}
+        {event.passcode ? (
+          <span title={event.passcode} className="max-w-full truncate rounded-full bg-stone-100 px-3 py-2 text-xs font-black text-stone-700">
+            Passcode: {shortPasscode(event.passcode)}
+          </span>
+        ) : null}
         {onEdit ? <button className="btn-secondary px-3 py-2 text-xs" onClick={onEdit}>Edit</button> : null}
         {onDelete ? <button className="rounded-full bg-red-100 px-3 py-2 text-xs font-black text-red-700" onClick={onDelete}>Delete</button> : null}
       </div>
