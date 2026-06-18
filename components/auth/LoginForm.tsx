@@ -1,11 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function captureHashSession() {
+      if (typeof window === "undefined") return;
+      if (!window.location.hash.includes("access_token")) return;
+
+      const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+
+      if (!accessToken || !refreshToken) {
+        setMessage("Login returned incomplete session. Please try again.");
+        return;
+      }
+
+      setMessage("Finishing login...");
+
+      const response = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        })
+      });
+
+      if (!response.ok) {
+        setMessage("Could not save login session. Please try again.");
+        return;
+      }
+
+      window.history.replaceState(null, "", "/login");
+      window.location.href = "/";
+    }
+
+    void captureHashSession();
+  }, []);
 
   async function signInWithGoogle() {
     const supabase = getSupabaseBrowserClient();
@@ -17,13 +54,14 @@ export function LoginForm() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${window.location.origin}/login`
       }
     });
   }
 
   async function signInWithMagicLink(e: React.FormEvent) {
     e.preventDefault();
+
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setMessage("Supabase env vars missing.");
@@ -33,7 +71,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`
+        emailRedirectTo: `${window.location.origin}/login`
       }
     });
 
@@ -75,6 +113,7 @@ export function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
+
           <button className="btn-secondary w-full" type="submit">
             Send magic link
           </button>
