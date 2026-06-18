@@ -1,33 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import eventsSeed from "@/data/events.json";
 import contacts from "@/data/contacts.json";
 import tasks from "@/data/tasks.json";
 import { EventCard } from "@/components/events/EventCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { computedStatus, eventDate, fromSnakeEvent } from "@/lib/utils";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { computedStatus, eventDate } from "@/lib/utils";
 import type { RecruitingEvent } from "@/types";
 
 export function DashboardClient() {
-  const [events, setEvents] = useState<RecruitingEvent[]>(eventsSeed as RecruitingEvent[]);
-  const [source, setSource] = useState<"seed" | "supabase">("seed");
+  const [events, setEvents] = useState<RecruitingEvent[]>([]);
+  const [source, setSource] = useState<"loading" | "supabase" | "local">("loading");
 
   useEffect(() => {
     async function load() {
-      const supabase = getSupabaseBrowserClient();
-      if (!supabase) return;
+      const res = await fetch("/api/events", { cache: "no-store" });
 
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("date", { ascending: true, nullsFirst: false });
-
-      if (!error && data && data.length) {
-        setEvents(data.map(fromSnakeEvent));
-        setSource("supabase");
+      if (!res.ok) {
+        setSource("local");
+        return;
       }
+
+      const json = await res.json();
+      setEvents(json.events || []);
+      setSource("supabase");
     }
 
     void load();
@@ -55,7 +51,7 @@ export function DashboardClient() {
     <div className="space-y-6">
       <section className="card p-8">
         <div className="text-xs font-black uppercase tracking-widest text-clay">
-          Jatin Kochar · MBA Recruiting · {source}
+          MBA Recruiting · {source}
         </div>
         <h1 className="mt-3 text-5xl font-black tracking-tight text-stone-950 md:text-7xl">
           Darden Recruiting OS
@@ -75,9 +71,16 @@ export function DashboardClient() {
           <h2 className="text-2xl font-black tracking-tight">Next Events</h2>
           <a className="font-bold text-clay" href="/events">View all</a>
         </div>
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {upcoming.slice(0, 6).map((event) => <EventCard key={event.id} event={event} />)}
         </div>
+
+        {upcoming.length === 0 ? (
+          <div className="card p-8 text-center text-stone-500">
+            No upcoming events found. Go to Settings → Sync Google Now.
+          </div>
+        ) : null}
       </section>
     </div>
   );
