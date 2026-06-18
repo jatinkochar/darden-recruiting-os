@@ -249,22 +249,47 @@ export function EventsClient({ seedEvents }: { seedEvents: RecruitingEvent[] }) 
         <StatCard label="Hidden Dups" value={Math.max(events.length - displayEvents.length, 0)}/>
       </section>
 
-      <section className="card space-y-3 p-4">
-        <div className="flex items-center gap-2 text-sm font-black text-stone-600"><SlidersHorizontal size={16}/> Filters</div>
-        <div className="grid gap-3 md:grid-cols-[1.2fr_repeat(7,minmax(105px,1fr))]">
+      <section className="card space-y-4 p-5">
+        <div className="flex items-center gap-2 text-sm font-black text-stone-600">
+          <SlidersHorizontal size={16}/> Filters
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[11px] font-black uppercase tracking-widest text-stone-500">Search</label>
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-stone-400" size={18}/>
-            <input className="input pl-10" placeholder="Search events..." value={query} onChange={(e)=>setQuery(e.target.value)} />
+            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18}/>
+            <input className="input w-full pl-12" placeholder="Search by company, event, notes, links..." value={query} onChange={(e)=>setQuery(e.target.value)} />
           </div>
-          <select className="input" value={dateFilter} onChange={(e)=>setDateFilter(e.target.value as DateFilter)}>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-6">
+          <FilterSelect label="Date" value={dateFilter} onChange={(value)=>setDateFilter(value as DateFilter)}>
             <option value="upcoming">Upcoming</option><option value="today">Today</option><option value="next7">Next 7 days</option><option value="next30">Next 30 days</option><option value="missing">Missing date</option><option value="ended">Ended</option><option value="all">All dates</option>
-          </select>
-          <select className="input" value={company} onChange={(e)=>setCompany(e.target.value)}><option value="">All companies</option>{companies.map((c)=><option key={c}>{c}</option>)}</select>
-          <select className="input" value={status} onChange={(e)=>setStatus(e.target.value)}><option value="">All statuses</option>{statuses.map((s)=><option key={s}>{s}</option>)}</select>
-          <select className="input" value={timezone} onChange={(e)=>setTimezone(e.target.value)}>{TIMEZONES.map((tz)=><option key={tz.value} value={tz.value}>{tz.label}</option>)}</select>
-          <select className="input" value={duplicateMode} onChange={(e)=>setDuplicateMode(e.target.value as DuplicateMode)}><option value="hide">Hide dups</option><option value="show">Show dups</option></select>
-          <button className={`btn-secondary ${viewMode === "cards" ? "bg-stone-900 text-white" : ""}`} onClick={()=>setViewMode("cards")}><Grid2X2 size={15}/> Cards</button>
-          <button className={`btn-secondary ${viewMode === "list" ? "bg-stone-900 text-white" : ""}`} onClick={()=>setViewMode("list")}><List size={15}/> List</button>
+          </FilterSelect>
+
+          <FilterSelect label="Company" value={company} onChange={setCompany}>
+            <option value="">All companies</option>{companies.map((c)=><option key={c}>{c}</option>)}
+          </FilterSelect>
+
+          <FilterSelect label="Status" value={status} onChange={setStatus}>
+            <option value="">All statuses</option>{statuses.map((s)=><option key={s}>{s}</option>)}
+          </FilterSelect>
+
+          <FilterSelect label="Timezone" value={timezone} onChange={setTimezone}>
+            {TIMEZONES.map((tz)=><option key={tz.value} value={tz.value}>{tz.label}</option>)}
+          </FilterSelect>
+
+          <FilterSelect label="Duplicates" value={duplicateMode} onChange={(value)=>setDuplicateMode(value as DuplicateMode)}>
+            <option value="hide">Hide duplicates</option><option value="show">Show duplicates</option>
+          </FilterSelect>
+
+          <div>
+            <label className="mb-2 block text-[11px] font-black uppercase tracking-widest text-stone-500">View</label>
+            <div className="flex rounded-2xl border border-stone-200 bg-white p-1">
+              <button aria-label="Card view" title="Cards" className={`flex flex-1 items-center justify-center rounded-xl px-3 py-2 ${viewMode === "cards" ? "bg-stone-900 text-white" : "text-stone-600"}`} onClick={()=>setViewMode("cards")}><Grid2X2 size={18}/></button>
+              <button aria-label="List view" title="List" className={`flex flex-1 items-center justify-center rounded-xl px-3 py-2 ${viewMode === "list" ? "bg-stone-900 text-white" : "text-stone-600"}`} onClick={()=>setViewMode("list")}><List size={18}/></button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -300,5 +325,16 @@ export function EventsClient({ seedEvents }: { seedEvents: RecruitingEvent[] }) 
 
       {editing !== undefined ? <EventForm initial={editing ?? undefined} onSave={saveEvent} onCancel={()=>setEditing(undefined)}/> : null}
     </div>
+  );
+}
+
+function FilterSelect({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[11px] font-black uppercase tracking-widest text-stone-500">{label}</span>
+      <select className="input w-full min-w-0" value={value} onChange={(e)=>onChange(e.target.value)}>
+        {children}
+      </select>
+    </label>
   );
 }
