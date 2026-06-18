@@ -1,9 +1,10 @@
 import { GoogleSyncPanel } from "@/components/settings/GoogleSyncPanel";
+import { AccountPrivacyControls } from "@/components/settings/AccountPrivacyControls";
 
 export default function SettingsPage({
   searchParams
 }: {
-  searchParams?: { google?: string };
+  searchParams?: { google?: string; deleted?: string };
 }) {
   return (
     <div className="space-y-5">
@@ -21,6 +22,8 @@ export default function SettingsPage({
       ) : null}
 
       <GoogleSyncPanel />
+
+      <AccountPrivacyControls />
     </div>
   );
 }
