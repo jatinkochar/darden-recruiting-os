@@ -1,13 +1,25 @@
-# Compass Commit 1 — App Shell Refresh
+# Compass Sprint 2 — Polished Pages
 
-Replace these files:
+Replace these files on your current Compass branch:
 
-- app/layout.tsx
-- components/layout/AppShell.tsx
-- components/layout/Sidebar.tsx
-- tailwind.config.ts
+- components/dashboard/DashboardClient.tsx
+- components/events/EventCard.tsx
+- components/events/EventsClient.tsx
+- components/crud/CrudClient.tsx
+- components/calendar/CalendarClient.tsx
+- components/auth/LoginForm.tsx
+- components/settings/GoogleSyncPanel.tsx
+- components/settings/AccountPrivacyControls.tsx
+- components/ui/StatCard.tsx
+- app/(app)/settings/page.tsx
+- app/(app)/crm/page.tsx
 
-Note:
-- This assumes you already replaced app/globals.css with the Compass globals from the previous step.
-- No functionality changes.
-- Branding changes from Darden Recruiting OS to Compass.
+This sprint gives every existing page a more consistent Compass-style UI:
+- friendlier Today/dashboard
+- polished event cards + event filters
+- card-based Applications/People/Tasks views through CrudClient
+- refined Calendar agenda/month views
+- redesigned Login
+- refined Settings/Google sync/privacy sections
+
+Assumes Sprint 1 AppShell + Tailwind changes are already applied.

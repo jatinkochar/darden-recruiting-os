@@ -31,7 +31,7 @@ function formatDate(event: RecruitingEvent, timezone = "local") {
     weekday: "short",
     month: "short",
     day: "numeric",
-    timeZone: timezone === "local" ? undefined : timezone
+    timeZone: timezone === "local" ? undefined : timezone,
   }).format(d);
 }
 
@@ -44,11 +44,11 @@ function formatTime(event: RecruitingEvent) {
 }
 
 function badgeClass(status: string) {
-  if (status === "Registered") return "bg-emerald-100 text-emerald-700";
-  if (status === "Happening Today") return "bg-amber-100 text-amber-800";
-  if (status === "Ended") return "bg-stone-100 text-stone-500";
-  if (status === "Invite Found") return "bg-blue-100 text-blue-700";
-  return "bg-yellow-100 text-yellow-800";
+  if (status === "Registered") return "bg-emerald-50 text-emerald-700 border-emerald-100";
+  if (status === "Happening Today") return "bg-[#FFF3E7] text-[#B85C00] border-[#FFE0BD]";
+  if (status === "Ended") return "bg-stone-100 text-stone-500 border-stone-200";
+  if (status === "Invite Found") return "bg-[#E8F3F8] text-[#005587] border-[#CFE7F1]";
+  return "bg-amber-50 text-amber-700 border-amber-100";
 }
 
 function shortPasscode(passcode?: string) {
@@ -60,13 +60,18 @@ export function EventCard({ event, onOpen, onEdit, onDelete, timezone = "local" 
   const status = computedStatus(event);
 
   return (
-    <article className="card group cursor-pointer p-5 transition hover:-translate-y-0.5 hover:shadow-xl" onClick={onOpen}>
+    <article
+      className="group cursor-pointer rounded-[26px] border border-stone-200 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-[#E57200]/30 hover:shadow-medium"
+      onClick={onOpen}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-black text-stone-500">{event.company || "Company"} · {event.type || "Event"}</div>
-          <h3 className="mt-2 line-clamp-3 text-xl font-black leading-tight tracking-tight text-stone-950">{event.title || "Untitled Event"}</h3>
+          <h3 className="mt-2 line-clamp-3 text-xl font-black leading-tight tracking-tight text-[#172033]">
+            {event.title || "Untitled Event"}
+          </h3>
         </div>
-        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${badgeClass(status)}`}>{status}</span>
+        <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-black ${badgeClass(status)}`}>{status}</span>
       </div>
 
       <div className="mt-4 grid gap-2 text-sm font-bold text-stone-700">
@@ -84,7 +89,7 @@ export function EventCard({ event, onOpen, onEdit, onDelete, timezone = "local" 
           </span>
         ) : null}
         {onEdit ? <button className="btn-secondary px-3 py-2 text-xs" onClick={onEdit}>Edit</button> : null}
-        {onDelete ? <button className="rounded-full bg-red-100 px-3 py-2 text-xs font-black text-red-700" onClick={onDelete}>Delete</button> : null}
+        {onDelete ? <button className="rounded-full bg-red-50 px-3 py-2 text-xs font-black text-red-700" onClick={onDelete}>Delete</button> : null}
       </div>
     </article>
   );
